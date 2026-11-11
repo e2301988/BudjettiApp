@@ -114,3 +114,27 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+#transactionList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#transactionList li span {
+    overflow-wrap: anywhere;
+}
+
+.delete-button {
+    background-color: #ef4444;
+    padding: 8px 12px;
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.delete-button:hover {
+    background-color: #dc2626;
+}
