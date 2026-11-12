@@ -10,7 +10,8 @@ const totalIncome = document.getElementById("totalIncome");
 const totalExpenses = document.getElementById("totalExpenses");
 const balance = document.getElementById("balance");
 
-const transactions = [];
+const savedTransactions = localStorage.getItem("budgetTransactions");
+const transactions = savedTransactions ? JSON.parse(savedTransactions) : [];
 
 form.addEventListener("submit", function(event) {
     event.preventDefault();
@@ -34,6 +35,7 @@ form.addEventListener("submit", function(event) {
 
     transactions.push(transaction);
 
+    saveTransactions();
     showTransactions();
     updateSummary();
 
@@ -43,6 +45,10 @@ form.addEventListener("submit", function(event) {
 categoryFilter.addEventListener("change", function() {
     showTransactions();
 });
+
+function saveTransactions() {
+    localStorage.setItem("budgetTransactions", JSON.stringify(transactions));
+}
 
 function showTransactions() {
     transactionList.innerHTML = "";
@@ -74,6 +80,7 @@ function showTransactions() {
         deleteButton.addEventListener("click", function() {
             transactions.splice(index, 1);
 
+            saveTransactions();
             showTransactions();
             updateSummary();
         });
@@ -107,3 +114,6 @@ function updateSummary() {
 function formatMoney(amount) {
     return amount.toFixed(2).replace(".", ",") + " €";
 }
+
+showTransactions();
+updateSummary();
