@@ -10,8 +10,37 @@ const totalIncome = document.getElementById("totalIncome");
 const totalExpenses = document.getElementById("totalExpenses");
 const balance = document.getElementById("balance");
 
+const budgetForm = document.getElementById("budgetForm");
+const monthlyBudgetInput = document.getElementById("monthlyBudget");
+const budgetMonth = document.getElementById("budgetMonth");
+const budgetAmount = document.getElementById("budgetAmount");
+const budgetSpent = document.getElementById("budgetSpent");
+const budgetRemaining = document.getElementById("budgetRemaining");
+const budgetProgress = document.getElementById("budgetProgress");
+const budgetMessage = document.getElementById("budgetMessage");
+
 const savedTransactions = localStorage.getItem("budgetTransactions");
 const transactions = savedTransactions ? JSON.parse(savedTransactions) : [];
+
+const savedBudget = localStorage.getItem("monthlyBudget");
+let monthlyBudget = savedBudget ? Number(savedBudget) : 0;
+
+function getCurrentMonth() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+
+    return year + "-" + month;
+}
+
+function getCurrentDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return year + "-" + month + "-" + day;
+}
 
 form.addEventListener("submit", function(event) {
     event.preventDefault();
@@ -30,7 +59,8 @@ form.addEventListener("submit", function(event) {
         description: description,
         amount: amount,
         type: type,
-        category: category
+        category: category,
+        date: getCurrentDate()
     };
 
     transactions.push(transaction);
@@ -38,8 +68,27 @@ form.addEventListener("submit", function(event) {
     saveTransactions();
     showTransactions();
     updateSummary();
+    updateBudget();
 
     form.reset();
+});
+
+budgetForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const amount = Number(monthlyBudgetInput.value);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Anna kelvollinen budjetti.");
+        return;
+    }
+
+    monthlyBudget = amount;
+
+    localStorage.setItem("monthlyBudget", monthlyBudget);
+
+    updateBudget();
+    budgetForm.reset();
 });
 
 categoryFilter.addEventListener("change", function() {
@@ -69,9 +118,12 @@ function showTransactions() {
 
         const typeText = transaction.type === "income" ? "Tulo" : "Meno";
         const amountText = formatMoney(transaction.amount);
+        const dateText = transaction.date || "Ei päivämäärää";
 
-        text.textContent = transaction.description + " – " +
-            transaction.category + " – " + typeText + ": " + amountText;
+        text.textContent = dateText + " – " +
+            transaction.description + " – " +
+            transaction.category + " – " +
+            typeText + ": " + amountText;
 
         deleteButton.textContent = "Poista";
         deleteButton.type = "button";
@@ -83,6 +135,7 @@ function showTransactions() {
             saveTransactions();
             showTransactions();
             updateSummary();
+            updateBudget();
         });
 
         listItem.appendChild(text);
@@ -111,9 +164,49 @@ function updateSummary() {
     balance.textContent = formatMoney(currentBalance);
 }
 
+function updateBudget() {
+    const currentMonth = getCurrentMonth();
+
+    let spent = 0;
+
+    transactions.forEach(function(transaction) {
+        if (
+            transaction.type === "expense" &&
+            transaction.date &&
+            transaction.date.startsWith(currentMonth)
+        ) {
+            spent += transaction.amount;
+        }
+    });
+
+    const remaining = monthlyBudget - spent;
+    const percentage = monthlyBudget > 0
+        ? (spent / monthlyBudget) * 100
+        : 0;
+
+    budgetMonth.textContent = "Kuukausi: " + currentMonth;
+    budgetAmount.textContent = formatMoney(monthlyBudget);
+    budgetSpent.textContent = formatMoney(spent);
+    budgetRemaining.textContent = formatMoney(remaining);
+
+    budgetProgress.style.width = Math.min(percentage, 100) + "%";
+
+    if (monthlyBudget === 0) {
+        budgetProgress.style.backgroundColor = "#22c55e";
+        budgetMessage.textContent = "Aseta kuukausibudjetti aloittaaksesi.";
+    } else if (remaining < 0) {
+        budgetProgress.style.backgroundColor = "#ef4444";
+        budgetMessage.textContent = "Kuukausibudjetti on ylitetty!";
+    } else {
+        budgetProgress.style.backgroundColor = "#22c55e";
+        budgetMessage.textContent = "Budjettia on vielä jäljellä.";
+    }
+}
+
 function formatMoney(amount) {
     return amount.toFixed(2).replace(".", ",") + " €";
 }
 
 showTransactions();
 updateSummary();
+updateBudget();
