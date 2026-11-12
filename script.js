@@ -1,8 +1,9 @@
-
 const form = document.getElementById("transactionForm");
 const descriptionInput = document.getElementById("description");
 const amountInput = document.getElementById("amount");
 const typeInput = document.getElementById("type");
+const categoryInput = document.getElementById("category");
+const categoryFilter = document.getElementById("categoryFilter");
 const transactionList = document.getElementById("transactionList");
 
 const totalIncome = document.getElementById("totalIncome");
@@ -17,6 +18,7 @@ form.addEventListener("submit", function(event) {
     const description = descriptionInput.value.trim();
     const amount = Number(amountInput.value);
     const type = typeInput.value;
+    const category = categoryInput.value;
 
     if (description === "" || !Number.isFinite(amount) || amount <= 0) {
         alert("Täytä tiedot oikein.");
@@ -26,7 +28,8 @@ form.addEventListener("submit", function(event) {
     const transaction = {
         description: description,
         amount: amount,
-        type: type
+        type: type,
+        category: category
     };
 
     transactions.push(transaction);
@@ -37,19 +40,32 @@ form.addEventListener("submit", function(event) {
     form.reset();
 });
 
+categoryFilter.addEventListener("change", function() {
+    showTransactions();
+});
+
 function showTransactions() {
     transactionList.innerHTML = "";
 
-    transactions.forEach(function(transaction, index) {
+    const selectedCategory = categoryFilter.value;
+
+    const filteredTransactions = transactions.filter(function(transaction) {
+        return selectedCategory === "all" ||
+            transaction.category === selectedCategory;
+    });
+
+    filteredTransactions.forEach(function(transaction) {
+        const index = transactions.indexOf(transaction);
+
         const listItem = document.createElement("li");
         const text = document.createElement("span");
         const deleteButton = document.createElement("button");
 
         const typeText = transaction.type === "income" ? "Tulo" : "Meno";
-        const amountText = transaction.amount.toFixed(2).replace(".", ",");
+        const amountText = formatMoney(transaction.amount);
 
         text.textContent = transaction.description + " – " +
-            typeText + ": " + amountText + " €";
+            transaction.category + " – " + typeText + ": " + amountText;
 
         deleteButton.textContent = "Poista";
         deleteButton.type = "button";

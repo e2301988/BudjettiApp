@@ -1,4 +1,3 @@
-
 * {
     box-sizing: border-box;
 }
@@ -109,12 +108,6 @@ button:hover {
     padding: 0;
 }
 
-@media (max-width: 600px) {
-    .summary {
-        grid-template-columns: 1fr;
-    }
-}
-
 #transactionList li {
     display: flex;
     justify-content: space-between;
@@ -137,4 +130,21 @@ button:hover {
 
 .delete-button:hover {
     background-color: #dc2626;
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-section select {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .summary {
+        grid-template-columns: 1fr;
+    }
 }
